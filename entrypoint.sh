@@ -56,7 +56,7 @@ fi
 
 # Read vulnerabilities from SARIF file
 vulnerabilities=$(jq -r '.runs[0].tool.driver.rules[] | {
-  title: "Vulnerability (\(.properties.cvssV3_severity)): \(.id) @ '"$INPUT_IMAGE_NAME"'",
+  title: "[TESTING] - Vulnerability (\(.properties.cvssV3_severity)): \(.id) @ '"$INPUT_IMAGE_NAME"'",
   severity: .properties.cvssV3_severity,
   name: .name,
   description: .help.text,
@@ -71,13 +71,13 @@ vulnerabilities=$(jq -r '.runs[0].tool.driver.rules[] | {
 existing_issues=$(gh issue list --label vulnerability --json number,title,state,labels)
 
 # Function to create a new issue
-create_issue() {
+ccreate_issue() {
   local title="$1"
   local body="$2"
   local labels="$3"
 
   gh issue create --title "$title" --body "$body" --label "$labels"
-  echo "Created issue: $title"
+  echo "Created issue: $title with labels: $labels"
 }
 
 # Function to update an existing issue
@@ -87,20 +87,22 @@ update_issue() {
   local body="$3"
   local labels="$4"
   local issue_state="$5"
+  local current_labels="$6"
 
   if [ "$issue_state" = "closed" ] && [ "$INPUT_ALLOW_REOPENING" = "true" ]; then
-    gh issue reopen "$issue_number"
-    gh issue comment "$issue_number" --body "This issue has been reopened because it is present in the latest scan."
+    gh issue reopen "$issue_number" --comment "This issue has been reopened because it is present in the latest scan."
     echo "Reopened issue: $title"
   fi
 
   # Update labels
   IFS=',' read -ra label_array <<< "$labels"
   for label in "${label_array[@]}"; do
-    gh issue edit "$issue_number" --add-label "$label"
+    if [[ ! "$current_labels" == *"$label"* ]]; then
+      gh issue edit "$issue_number" --add-label "$label"
+    fi
   done
 
-  echo "Updated issue #$issue_number: $title"
+  echo "Updated issue #$issue_number: $title with labels: $labels"
 }
 
 # Create an array to store current vulnerability titles
@@ -150,7 +152,8 @@ EOF
   if [ -n "$existing_issue" ]; then
     issue_number=$(echo "$existing_issue" | jq -r '.number')
     issue_state=$(echo "$existing_issue" | jq -r '.state')
-    update_issue "$issue_number" "$title" "$body" "$labels" "$issue_state"
+    current_labels=$(echo "$existing_issue" | jq -r '.labels[].name' | tr '\n' ',' | sed 's/,$//')
+    update_issue "$issue_number" "$title" "$body" "$labels" "$issue_state" "$current_labels"
   else
     create_issue "$title" "$body" "$labels"
   fi
@@ -159,6 +162,9 @@ EOF
   current_vulnerabilities+=("$title")
 done
 
+# After processing all vulnerabilities, convert current_vulnerabilities array to JSON
+current_vulnerabilities_json=$(printf '%s\n' "${current_vulnerabilities[@]}" | jq -R . | jq -s .)
+
 # Process existing issues that are not in the current vulnerabilities
 echo "$existing_issues" | jq -c '.[]' | while read -r issue; do
   issue_title=$(echo "$issue" | jq -r '.title')
@@ -166,7 +172,7 @@ echo "$existing_issues" | jq -c '.[]' | while read -r issue; do
   issue_state=$(echo "$issue" | jq -r '.state')
   
   # Check if the issue is in the current vulnerabilities
-  if ! echo "${current_vulnerabilities[@]}" | grep -q "$issue_title"; then
+  if ! echo "$current_vulnerabilities_json" | jq -e --arg TITLE "$issue_title" 'contains([$TITLE])' > /dev/null; then
     if [ "$issue_state" = "open" ] && [ "$INPUT_ALLOW_CLOSING" = "true" ]; then
       gh issue close "$issue_number" --comment "This issue has been closed because it is no longer present in the latest scan."
       echo "Closed issue: $issue_title"
