@@ -9,9 +9,16 @@ log_error_and_exit() {
 }
 
 # Validate required inputs
-[ -z "${INPUT_GITHUB_TOKEN}" ] && log_error_and_exit "Registry input is required"
-[ -z "${INPUT_SARIF_FILE}" ] && log_error_and_exit "Username input is required"
-[ -z "${INPUT_IMAGE_NAME}" ] && log_error_and_exit "Password input is required"
+[ -z "$1" ] && log_error_and_exit "Token input is required"
+[ -z "$2" ] && log_error_and_exit "SARIF file input is required"
+[ -z "$3" ] && log_error_and_exit "Image name input is required"
+
+INPUT_GITHUB_TOKEN="$1"
+INPUT_SARIF_FILE="$2"
+INPUT_IMAGE_NAME="$3"
+INPUT_PROJECT="$4"
+INPUT_ALLOW_REOPENING="${5:-true}"
+INPUT_ALLOW_CLOSING="${6:-true}"
 
 echo "INPUT_GITHUB_TOKEN: $INPUT_GITHUB_TOKEN"
 echo "INPUT_SARIF_FILE: $INPUT_SARIF_FILE"
@@ -19,7 +26,6 @@ echo "INPUT_IMAGE_NAME: $INPUT_IMAGE_NAME"
 echo "INPUT_PROJECT: $INPUT_PROJECT"
 echo "INPUT_ALLOW_REOPENING: $INPUT_ALLOW_REOPENING"
 echo "INPUT_ALLOW_CLOSING: $INPUT_ALLOW_CLOSING"
-
 
 # Authenticate with GitHub CLI
 echo "$INPUT_GITHUB_TOKEN" | gh auth login --with-token
