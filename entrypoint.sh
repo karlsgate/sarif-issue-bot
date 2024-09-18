@@ -27,6 +27,9 @@ echo "INPUT_PROJECT: $INPUT_PROJECT"
 echo "INPUT_ALLOW_REOPENING: $INPUT_ALLOW_REOPENING"
 echo "INPUT_ALLOW_CLOSING: $INPUT_ALLOW_CLOSING"
 
+# Configure Git to trust the workspace directory
+git config --global --add safe.directory /github/workspace
+
 # Authenticate with GitHub CLI
 echo "$INPUT_GITHUB_TOKEN" | gh auth login --with-token
 
