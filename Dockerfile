@@ -18,4 +18,4 @@ COPY entrypoint.sh .
 RUN chmod +x entrypoint.sh
 
 # Run the script
-ENTRYPOINT ["./usr/src/app/entrypoint.sh"]
+ENTRYPOINT ["/usr/src/app/entrypoint.sh"]

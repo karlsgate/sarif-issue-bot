@@ -29,5 +29,7 @@ runs:
   args:
     - ${{ inputs.github-token }}
     - ${{ inputs.sarif-file }}
-    - ${{ inputs.project }}
     - ${{ inputs.image-name }}
+    - ${{ inputs.project }}
+    - ${{ inputs.allow-reopening }}
+    - ${{ inputs.allow-closing }}
