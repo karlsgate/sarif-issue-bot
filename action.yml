@@ -23,6 +23,10 @@ inputs:
     description: 'Allow closing of resolved issues'
     required: false
     default: true
+  cleanup:
+    description: 'Removes github issues. This is for testing purposes only.'
+    required: false
+    default: false
 runs:
   using: 'docker'
   image: 'Dockerfile'
@@ -33,3 +37,4 @@ runs:
     - ${{ inputs.project }}
     - ${{ inputs.allow-reopening }}
     - ${{ inputs.allow-closing }}
+    - ${{ inputs.cleanup }}
