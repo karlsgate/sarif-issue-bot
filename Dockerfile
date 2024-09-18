@@ -2,7 +2,7 @@
 FROM alpine:latest
 
 # Install necessary packages
-RUN apk add --no-cache bash curl jq
+RUN apk add --no-cache bash curl jq git
 
 # Install GitHub CLI
 RUN curl -fsSL https://github.com/cli/cli/releases/latest/download/gh_2.57.0_linux_amd64.tar.gz | tar xz && \
