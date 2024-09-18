@@ -71,40 +71,60 @@ vulnerabilities=$(jq -r '.runs[0].tool.driver.rules[] | {
 existing_issues=$(gh issue list --label vulnerability --json number,title,state,labels)
 
 # Function to create a new issue
-ccreate_issue() {
+create_issue() {
   local title="$1"
   local body="$2"
   local labels="$3"
 
-  gh issue create --title "$title" --body "$body" --label "$labels"
-  echo "Created issue: $title with labels: $labels"
-}
+  # Create the issue without labels first
+  issue_number=$(gh issue create --title "$title" --body "$body" --json number --jq .number)
+  
+  # Add labels one by one
+  IFS=',' read -ra label_array <<< "$labels"
+  for label in "${label_array[@]}"; do
+    gh issue edit "$issue_number" --add-label "$label"
+    echo "Added label: $label to new issue #$issue_number"
+  done
 
+  echo "Created issue #$issue_number: $title with labels: $labels"
+}
 # Function to update an existing issue
 update_issue() {
   local issue_number="$1"
   local title="$2"
   local body="$3"
-  local labels="$4"
+  local new_labels="$4"
   local issue_state="$5"
   local current_labels="$6"
 
   if [ "$issue_state" = "closed" ] && [ "$INPUT_ALLOW_REOPENING" = "true" ]; then
-    gh issue reopen "$issue_number" --comment "This issue has been reopened because it is present in the latest scan."
+    gh issue reopen "$issue_number"
+    gh issue comment "$issue_number" --body "This issue has been reopened because it is present in the latest scan."
     echo "Reopened issue: $title"
   fi
 
-  # Update labels
-  IFS=',' read -ra label_array <<< "$labels"
-  for label in "${label_array[@]}"; do
-    if [[ ! "$current_labels" == *"$label"* ]]; then
+  # Convert comma-separated labels to arrays
+  IFS=',' read -ra new_label_array <<< "$new_labels"
+  IFS=',' read -ra current_label_array <<< "$current_labels"
+
+  # Add new labels
+  for label in "${new_label_array[@]}"; do
+    if ! echo "${current_label_array[@]}" | grep -q "$label"; then
       gh issue edit "$issue_number" --add-label "$label"
+      echo "Added label: $label to issue #$issue_number"
     fi
   done
 
-  echo "Updated issue #$issue_number: $title with labels: $labels"
-}
+  # Remove old labels that are no longer applicable
+  for label in "${current_label_array[@]}"; do
+    if ! echo "${new_label_array[@]}" | grep -q "$label"; then
+      gh issue edit "$issue_number" --remove-label "$label"
+      echo "Removed label: $label from issue #$issue_number"
+    fi
+  done
 
+  echo "Updated issue #$issue_number: $title with labels: $new_labels"
+}
 # Create an array to store current vulnerability titles
 current_vulnerabilities=()
 
