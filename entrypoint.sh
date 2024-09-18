@@ -33,6 +33,35 @@ git config --global --add safe.directory /github/workspace
 # Authenticate with GitHub CLI
 echo "$INPUT_GITHUB_TOKEN" | gh auth login --with-token
 
+# Function to generate a random color
+generate_random_color() {
+  printf '%06X\n' $((RANDOM % 16777215))
+}
+
+# Function to create a label if it doesn't exist
+create_label_if_not_exists() {
+  local label=$1
+  local color=$2
+  local description=$3
+  
+  if ! gh label list | grep -q "$label"; then
+    gh label create "$label" --color "$color" --description "$description" || echo "Failed to create label: $label"
+  fi
+}
+
+# Create necessary labels
+create_label_if_not_exists "vulnerability" "d73a4a" "Security vulnerability"
+create_label_if_not_exists "critical" "b60205" "Critical severity"
+create_label_if_not_exists "high" "d93f0b" "High severity"
+create_label_if_not_exists "medium" "fbca04" "Medium severity"
+create_label_if_not_exists "low" "0e8a16" "Low severity"
+create_label_if_not_exists "UNSPECIFIED" "cccccc" "Unspecified severity"
+
+if [ -n "$INPUT_PROJECT" ]; then
+  random_color=$(generate_random_color)
+  create_label_if_not_exists "$INPUT_PROJECT" "$random_color" "Project: $INPUT_IMAGE_NAME"
+fi
+
 # Read vulnerabilities from SARIF file
 vulnerabilities=$(jq -r '.runs[0].tool.driver.rules[] | {
   title: "[TESTING] - Vulnerability (\(.properties.cvssV3_severity)): \(.id) @ '"$INPUT_IMAGE_NAME"'",
