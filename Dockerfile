@@ -7,6 +7,7 @@ RUN apk add --no-cache bash curl jq git github-cli
 WORKDIR /usr/src/app
 
 COPY entrypoint.sh .
+COPY issue_template.md .
 
 RUN dos2unix entrypoint.sh && chmod +x entrypoint.sh
 
