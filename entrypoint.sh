@@ -16,7 +16,7 @@ log_error_and_exit() {
 INPUT_GITHUB_TOKEN="$1"
 INPUT_SARIF_FILE="$2"
 INPUT_IMAGE_NAME="$3"
-INPUT_PROJECT="$4"
+INPUT_LABEL="$4"
 INPUT_ALLOW_REOPENING="${5:-true}"
 INPUT_ALLOW_CLOSING="${6:-true}"
 
@@ -43,15 +43,15 @@ create_label_if_not_exists() {
 }
 
 # Create necessary labels
-create_label_if_not_exists "vulnerability" "d73a4a" "Security vulnerability"
-create_label_if_not_exists "critical" "b60205" "Critical severity"
-create_label_if_not_exists "high" "d93f0b" "High severity"
-create_label_if_not_exists "medium" "fbca04" "Medium severity"
-create_label_if_not_exists "low" "0e8a16" "Low severity"
+create_label_if_not_exists "security" "d93f0b" "Security advisory, incident, issue, or vulnerability"
+create_label_if_not_exists "critical" "ff0000" "Critical priority issue"
+create_label_if_not_exists "high" "ff6600" "High priority issue"
+create_label_if_not_exists "medium" "ffdd00" "Medium priority issue"
+create_label_if_not_exists "low" "0000ff" "Low priority issue"
 
-if [ -n "$INPUT_PROJECT" ]; then
+if [ -n "$INPUT_LABEL" ]; then
   random_color=$(generate_random_color)
-  create_label_if_not_exists "$INPUT_PROJECT" "$random_color" "Project: $INPUT_IMAGE_NAME"
+  create_label_if_not_exists "$INPUT_LABEL" "$random_color" "$INPUT_IMAGE_NAME"
 fi
 
 # Read vulnerabilities from SARIF file
@@ -67,8 +67,8 @@ vulnerabilities=$(jq -r '.runs[0].tool.driver.rules[] | {
   purls: .properties.purls
 }' "$INPUT_SARIF_FILE")
 
-# Fetch all issues with the 'vulnerability' label
-existing_issues=$(gh issue list --label vulnerability --json number,title,state,labels)
+# Fetch all issues with the 'security' label
+existing_issues=$(gh issue list --label security --json number,title,state,labels)
 
 # Function to create a new issue
 create_issue() {
@@ -158,9 +158,9 @@ EOF
 )
 
   # Initialize labels with mandatory ones
-  labels="vulnerability"
-  if [[ -n "$INPUT_PROJECT" ]]; then
-    labels="$labels,$INPUT_PROJECT"
+  labels="security"
+  if [[ -n "$INPUT_LABEL" ]]; then
+    labels="$labels,$INPUT_LABEL"
   fi
   if [[ "$severity" =~ ^(critical|high|medium|low)$ ]]; then
     labels="$labels,$severity"

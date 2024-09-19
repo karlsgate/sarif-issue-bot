@@ -11,8 +11,8 @@ inputs:
   image-name:
     description: 'Docker image name'
     required: true
-  project:
-    description: 'Project name for labeling'
+  label:
+    description: 'Additional label added to issue'
     required: false
     default: ''
   allow-reopening:
@@ -30,6 +30,6 @@ runs:
     - ${{ inputs.github-token }}
     - ${{ inputs.sarif-file }}
     - ${{ inputs.image-name }}
-    - ${{ inputs.project }}
+    - ${{ inputs.label }}
     - ${{ inputs.allow-reopening }}
     - ${{ inputs.allow-closing }}
