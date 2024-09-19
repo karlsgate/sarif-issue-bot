@@ -187,7 +187,7 @@ fi
 
 # Read vulnerabilities from SARIF file
 vulnerabilities=$(jq -r '.runs[0].tool.driver.rules[] | {
-  title: "[TESTING] - Vulnerability (\(.properties.cvssV3_severity)): \(.id) @ '"$INPUT_IMAGE_NAME"'",
+  title: "Vulnerability (\(.properties.cvssV3_severity)): \(.id) @ '"$INPUT_IMAGE_NAME"'",
   severity: .properties.cvssV3_severity,
   name: .name,
   description: .help.text,
