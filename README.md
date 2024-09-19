@@ -1,4 +1,4 @@
-# SARIF Issue Manager
+# SARIF Issue Bot
 
 A GitHub Action to create and manage issues based on SARIF output using GitHub CLI.
 
@@ -33,12 +33,12 @@ This action processes SARIF (Static Analysis Results Interchange Format) files a
 To use this action in your workflow, add the following step:
 
 ```yaml
-- name: Run SARIF Issue Manager
-  uses: your-username/sarif-issue-manager@v1
+- name: Run SARIF Issue Bot
+  uses: your-username/sarif-issue-bot@v1
   with:
     github-token: ${{ secrets.GITHUB_TOKEN }}
     sarif-file: path/to/sarif-output.json
-    image-name: your-docker-image:tag
+    image-name: your-docker-image
     label: custom-label
 ```
 
@@ -85,8 +85,8 @@ jobs:
         output-format: sarif
         output-file: scout-results.sarif
 
-    - name: Run SARIF Issue Manager
-      uses: your-username/sarif-issue-manager@v1
+    - name: Run SARIF Issue Bot
+      uses: your-username/sarif-issue-bot@v1
       with:
         github-token: ${{ secrets.GITHUB_TOKEN }}
         sarif-file: scout-results.sarif
