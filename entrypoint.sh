@@ -15,7 +15,7 @@ log_error_and_exit() {
 
 INPUT_GITHUB_TOKEN="$1"
 INPUT_SARIF_FILE="$2"
-INPUT_IMAGE_NAME="$3"
+INPUT_ISSUE_TITLE_REPLACEMENT="$3"
 INPUT_LABEL="$4"
 INPUT_ALLOW_REOPENING="${5:-true}"
 INPUT_ALLOW_CLOSING="${6:-true}"
@@ -134,7 +134,7 @@ process_vulnerabilities() {
       -e "s|{{security_severity}}|$security_severity|g" \
       -e "s|{{help_uri}}|$help_uri|g" \
       -e "s|{{purls}}|$purls|g" \
-      -e "s|{{image_name}}|$INPUT_IMAGE_NAME|g"
+      -e "s|{{image_name}}|$INPUT_ISSUE_TITLE_REPLACEMENT|g"
     )
 
     # Initialize labels with mandatory ones
@@ -152,7 +152,7 @@ process_vulnerabilities() {
     # Add the title to the file of SARIF vulnerability titles
     echo "$title" >> sarif_titles.txt
 
-    echo "DEBUG: Processing vulnerability: $title"
+    echo "Processing vulnerability: $title"
 
     # Check if the issue already exists
     existing_issue=$(echo "$existing_issues" | jq -r --arg TITLE "$title" '.[] | select(.title == $TITLE)')
@@ -182,12 +182,12 @@ create_label_if_not_exists "low" "0000ff" "Low priority issue"
 
 if [ -n "$INPUT_LABEL" ]; then
   random_color=$(generate_random_color)
-  create_label_if_not_exists "$INPUT_LABEL" "$random_color" "$INPUT_IMAGE_NAME"
+  create_label_if_not_exists "$INPUT_LABEL" "$random_color" "$INPUT_ISSUE_TITLE_REPLACEMENT"
 fi
 
 # Read vulnerabilities from SARIF file
 vulnerabilities=$(jq -r '.runs[0].tool.driver.rules[] | {
-  title: "Vulnerability (\(.properties.cvssV3_severity)): \(.id) @ '"$INPUT_IMAGE_NAME"'",
+  title: "Vulnerability (\(.properties.cvssV3_severity)): \(.id) @ '"$INPUT_ISSUE_TITLE_REPLACEMENT"'",
   severity: .properties.cvssV3_severity,
   name: .name,
   description: .help.text,
@@ -204,10 +204,10 @@ existing_issues=$(gh issue list --label security --state all --json number,title
 # Process vulnerabilities
 process_vulnerabilities
 
-echo "DEBUG: SARIF Vulnerability Titles:"
+echo "SARIF Vulnerability Titles:"
 cat sarif_titles.txt
 
-echo "DEBUG: SARIF Vulnerability Titles: $sarif_vulnerability_titles"
+echo "SARIF Vulnerability Titles: $sarif_vulnerability_titles"
 
 # Check for issues to close
 if [ "$INPUT_ALLOW_CLOSING" = true ]; then
@@ -215,20 +215,15 @@ if [ "$INPUT_ALLOW_CLOSING" = true ]; then
     issue_number=$(echo "$issue" | jq -r '.number')
     issue_title=$(echo "$issue" | jq -r '.title')
     
-    echo "DEBUG: Checking issue #$issue_number: $issue_title"
+    echo "Checking issue #$issue_number: $issue_title"
     if grep -Fxq "$issue_title" sarif_titles.txt; then
-      echo "DEBUG: Keeping open issue #$issue_number: $issue_title"
+      echo "Keeping open issue #$issue_number: $issue_title"
     else
-      echo "DEBUG: Closing issue #$issue_number: $issue_title"
+      echo "Closing issue #$issue_number: $issue_title"
       close_issue "$issue_number" "$issue_title"
     fi
   done
 fi
-
-# Debug output
-echo "Final SARIF Vulnerability Titles:"
-cat sarif_titles.txt
-echo "Existing Issues: $existing_issues"
 
 # Clean up
 rm sarif_titles.txt

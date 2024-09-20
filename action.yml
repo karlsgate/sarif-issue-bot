@@ -8,7 +8,7 @@ inputs:
   sarif-file:
     description: 'Path to the SARIF file'
     required: true
-  image-name:
+  issue-title-replacement:
     description: 'Docker image name'
     required: true
   label:
@@ -29,7 +29,7 @@ runs:
   args:
     - ${{ inputs.github-token }}
     - ${{ inputs.sarif-file }}
-    - ${{ inputs.image-name }}
+    - ${{ inputs.issue-title-replacement }}
     - ${{ inputs.label }}
     - ${{ inputs.allow-reopening }}
     - ${{ inputs.allow-closing }}
