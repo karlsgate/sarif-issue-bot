@@ -21,7 +21,7 @@ INPUT_ALLOW_REOPENING="${5:-true}"
 INPUT_ALLOW_CLOSING="${6:-true}"
 
 # Read the issue template from the file
-ISSUE_TEMPLATE=$(cat issue_template.md)
+ISSUE_TEMPLATE=$(cat /usr/src/app/issue_template.md)
 
 # Configure Git to trust the workspace directory
 git config --global --add safe.directory /github/workspace
