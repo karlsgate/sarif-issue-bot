@@ -41,7 +41,7 @@ create_label_if_not_exists() {
   local description="$3"
   
   if ! gh label list | grep -q "$label"; then
-    gh label create "$label" --color "$color" --description "$description" || echo "Failed to create label: $label"
+    gh label create "$label" --color "$color" --description "$description" > /dev/null 2>&1 || echo "Failed to create label: $label"
   fi
 }
 
@@ -52,8 +52,8 @@ create_issue() {
   local labels="$3"
 
   # Use printf to preserve newlines in the body
-  printf "%s" "$body" | gh issue create --title "$title" --body-file - --label "$labels"
-  echo "Created issue: $title with labels: $labels"
+  printf "%s" "$body" | gh issue create --title "$title" --body-file - --label "$labels" > /dev/null 2>&1
+  echo "🆕 Created issue: $title with labels: $labels"
 }
 
 # Function to update an existing issue
@@ -66,28 +66,28 @@ update_issue() {
   local current_labels="$6"
 
   if [ "$issue_state" = "closed" ] && [ "$INPUT_ALLOW_REOPENING" = true ]; then
-    gh issue reopen "$issue_number"
-    gh issue comment "$issue_number" --body "This issue has been reopened because it is present in the latest scan."
-    echo "Reopened issue: $title"
+    gh issue reopen "$issue_number" > /dev/null 2>&1
+    gh issue comment "$issue_number" --body "This issue has been reopened because it is present in the latest scan." > /dev/null 2>&1
+    echo "🔓 Reopened issue: $title"
   fi
 
   # Add new labels
   for label in $(echo "$new_labels" | tr ',' ' '); do
     if ! echo "$current_labels" | grep -q "$label"; then
-      gh issue edit "$issue_number" --add-label "$label"
-      echo "Added label: $label to issue #$issue_number"
+      gh issue edit "$issue_number" --add-label "$label" > /dev/null 2>&1
+      echo "🏷️Added label: $label to issue #$issue_number"
     fi
   done
 
   # Remove old labels that are no longer applicable
   for label in $(echo "$current_labels" | tr ',' ' '); do
     if ! echo "$new_labels" | grep -q "$label"; then
-      gh issue edit "$issue_number" --remove-label "$label"
-      echo "Removed label: $label from issue #$issue_number"
+      gh issue edit "$issue_number" --remove-label "$label" > /dev/null 2>&1
+      echo "❌ Removed label: $label from issue #$issue_number"
     fi
   done
 
-  echo "Updated issue #$issue_number: $title with labels: $new_labels"
+  echo "✏️ Updated issue #$issue_number: $title with labels: $new_labels"
 }
 
 # Function to close an issue
@@ -95,8 +95,8 @@ close_issue() {
   local issue_number="$1"
   local title="$2"
 
-  gh issue close "$issue_number" --comment "This issue has been closed because it is no longer present in the latest scan."
-  echo "Closed issue #$issue_number: $title"
+  gh issue close "$issue_number" --comment "This issue has been closed because it is no longer present in the latest scan." > /dev/null 2>&1
+  echo "🔒 Closed issue #$issue_number: $title"
 }
 
 # Function to reopen an issue
@@ -104,15 +104,33 @@ reopen_issue() {
   local issue_number="$1"
   local title="$2"
 
-  gh issue reopen "$issue_number"
-  gh issue comment "$issue_number" --body "This issue has been reopened because it is present in the latest scan."
-  echo "Reopened issue #$issue_number: $title"
+  gh issue reopen "$issue_number" > /dev/null 2>&1
+  gh issue comment "$issue_number" --body "This issue has been reopened because it is present in the latest scan." > /dev/null 2>&1
+  echo "🔓 Reopened issue #$issue_number: $title"
+}
+
+replace_placeholder() {
+    local template="$1"
+    local placeholder="$2"
+    local value="$3"
+    
+    awk -v p="$placeholder" -v v="$value" '
+    BEGIN {
+        RS = ORS = "\n"
+        gsub(/[\\&]/, "\\\\&", v)
+    }
+    {
+        gsub(p, v)
+        print
+    }' <<EOF
+$template
+EOF
 }
 
 # Function to process vulnerabilities
 process_vulnerabilities() {
   echo "" > sarif_titles.txt  # Clear the file at the start
-
+  
   echo "$vulnerabilities" | jq -c '.' | while read -r vulnerability; do
     title=$(echo "$vulnerability" | jq -r '.title')
     severity=$(echo "$vulnerability" | jq -r '.severity')
@@ -122,21 +140,19 @@ process_vulnerabilities() {
     fixed_version=$(echo "$vulnerability" | jq -r '.fixed_version')
     security_severity=$(echo "$vulnerability" | jq -r '.security_severity')
     help_uri=$(echo "$vulnerability" | jq -r '.help_uri')
-    purls=$(echo "$vulnerability" | jq -r '.purls | join("\n- ")')
+    purls=$(echo "$vulnerability" | jq -r '.purls | map("   - " + .) | join("\n")')
 
-    # Use the issue template and replace placeholders with actual values
-    body=$(echo "$ISSUE_TEMPLATE" | sed \
-      -e "s|{{name}}|$name|g" \
-      -e "s|{{description}}|$description|g" \
-      -e "s|{{affected_version}}|$affected_version|g" \
-      -e "s|{{fixed_version}}|$fixed_version|g" \
-      -e "s|{{severity}}|$severity|g" \
-      -e "s|{{security_severity}}|$security_severity|g" \
-      -e "s|{{help_uri}}|$help_uri|g" \
-      -e "s|{{purls}}|$purls|g" \
-      -e "s|{{image_name}}|$INPUT_ISSUE_TITLE_REPLACEMENT|g"
-    )
-
+    # Use the replace_placeholder function to update the issue template
+    body="$ISSUE_TEMPLATE"
+    body=$(replace_placeholder "$body" "{{name}}" "$name")
+    body=$(replace_placeholder "$body" "{{description}}" "$description")
+    body=$(replace_placeholder "$body" "{{affected_version}}" "$affected_version")
+    body=$(replace_placeholder "$body" "{{fixed_version}}" "$fixed_version")
+    body=$(replace_placeholder "$body" "{{severity}}" "$severity")
+    body=$(replace_placeholder "$body" "{{security_severity}}" "$security_severity")
+    body=$(replace_placeholder "$body" "{{help_uri}}" "$help_uri")
+    body=$(replace_placeholder "$body" "{{purls}}" "$purls")
+    body=$(echo "$body" | sed 's/{{[^}]*}}//g')
     # Initialize labels with mandatory ones
     labels="security"
     if [ -n "$INPUT_LABEL" ]; then
@@ -152,7 +168,7 @@ process_vulnerabilities() {
     # Add the title to the file of SARIF vulnerability titles
     echo "$title" >> sarif_titles.txt
 
-    echo "Processing vulnerability: $title"
+    echo "⏳ Processing: $title"
 
     # Check if the issue already exists
     existing_issue=$(echo "$existing_issues" | jq -r --arg TITLE "$title" '.[] | select(.title == $TITLE)')
@@ -189,7 +205,7 @@ fi
 vulnerabilities=$(jq -r '.runs[0].tool.driver.rules[] | {
   title: "Vulnerability (\(.properties.cvssV3_severity)): \(.id) @ '"$INPUT_ISSUE_TITLE_REPLACEMENT"'",
   severity: .properties.cvssV3_severity,
-  name: .name,
+  name: "\(.name) - \(.id)",
   description: .help.text,
   affected_version: .properties.affected_version,
   fixed_version: .properties.fixed_version,
@@ -199,15 +215,12 @@ vulnerabilities=$(jq -r '.runs[0].tool.driver.rules[] | {
 }' "$INPUT_SARIF_FILE")
 
 # Fetch all issues with the 'security' label, both open and closed
-existing_issues=$(gh issue list --label security --state all --json number,title,state,labels)
+existing_issues=$(gh issue list --label security --state all --json number,title,state,labels 2> /dev/null)
 
 # Process vulnerabilities
 process_vulnerabilities
 
-echo "SARIF Vulnerability Titles:"
-cat sarif_titles.txt
-
-echo "SARIF Vulnerability Titles: $sarif_vulnerability_titles"
+echo "" > sarif_closed_titles.txt
 
 # Check for issues to close
 if [ "$INPUT_ALLOW_CLOSING" = true ]; then
@@ -215,15 +228,42 @@ if [ "$INPUT_ALLOW_CLOSING" = true ]; then
     issue_number=$(echo "$issue" | jq -r '.number')
     issue_title=$(echo "$issue" | jq -r '.title')
     
-    echo "Checking issue #$issue_number: $issue_title"
+    echo "🔍 Checking issue #$issue_number: $issue_title"
     if grep -Fxq "$issue_title" sarif_titles.txt; then
-      echo "Keeping open issue #$issue_number: $issue_title"
+      echo "👍 Keeping open issue #$issue_number: $issue_title"
     else
-      echo "Closing issue #$issue_number: $issue_title"
+      echo "👋 Closing issue #$issue_number: $issue_title"
+      echo "$issue_title" >> sarif_closed_titles.txt
       close_issue "$issue_number" "$issue_title"
     fi
   done
 fi
+echo "✅ Done processing vulnerabilities"
+
+OPEN_ISSUES=$(cat sarif_titles.txt)
+CLOSED_ISSUES=$(cat sarif_closed_titles.txt)
+
+if [[ "$OPEN_ISSUES" =~ ^[[:space:]]*$ ]]; then
+  # Trim whitespace and newlines
+  OPEN_ISSUES=$(echo "$OPEN_ISSUES" | xargs)
+fi
+
+if [[ "$CLOSED_ISSUES" =~ ^[[:space:]]*$ ]]; then
+  # Trim whitespace and newlines
+  CLOSED_ISSUES=$(echo "$CLOSED_ISSUES" | xargs)
+fi
+
+if [ -n "$OPEN_ISSUES" ]; then
+  echo ""
+  echo "📃 Here are the currently open vulnerability issue titles for $INPUT_ISSUE_TITLE_REPLACEMENT:"
+  echo "$OPEN_ISSUES"
+fi
+if [ -n "$CLOSED_ISSUES" ]; then
+  echo ""
+  echo "📃Here are the closed vulnerability issue titles for $INPUT_ISSUE_TITLE_REPLACEMENT:"
+  echo "$CLOSED_ISSUES"
+fi
 
 # Clean up
 rm sarif_titles.txt
+rm sarif_closed_titles.txt

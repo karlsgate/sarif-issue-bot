@@ -7,7 +7,8 @@
 - **CVSS V3 Severity**: {{severity}}
 - **Security Severity**: {{security_severity}}
 - **Help URI**: {{help_uri}}
-**Affected Packages**:
-- {{purls}}
+- **Affected Packages**:
+{{purls}}
 
-💡 This issue was automatically created by GitHub workflow using the Docker Scout output for image: {{image_name}}.
+---
+💡 This issue was automatically created by GitHub workflow using the Docker Scout output.
