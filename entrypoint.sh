@@ -51,9 +51,9 @@ create_issue() {
   local body="$2"
   local labels="$3"
 
-  # Create the issue without labels first
-  issue_number=$(gh issue create --title "$title" --body "$body" --label "$labels")
-  echo "Created issue #$issue_number: $title with labels: $labels"
+  # Use printf to preserve newlines in the body
+  printf "%s" "$body" | gh issue create --title "$title" --body-file - --label "$labels"
+  echo "Created issue: $title with labels: $labels"
 }
 
 # Function to update an existing issue

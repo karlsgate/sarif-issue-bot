@@ -1,0 +1,90 @@
+{
+  "version": "2.1.0",
+  "$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json",
+  "runs": [
+    {
+      "tool": {
+        "driver": {
+          "fullName": "Docker Scout",
+          "informationUri": "https://docker.com/products/docker-scout",
+          "name": "docker scout",
+          "rules": [
+            {
+              "id": "CVE-2005-2541",
+              "name": "OsPackageVulnerability",
+              "shortDescription": {
+                "text": "CVE-2005-2541"
+              },
+              "helpUri": "https://scout.docker.com/v/CVE-2005-2541?s=debian&n=tar&ns=debian&t=deb&osn=debian&osv=12&vr=%3E%3D1.34%2Bdfsg-1.2%2Bdeb12u1",
+              "help": {
+                "text": "Tar 1.15.1 does not properly warn the user when extracting setuid or setgid files, which may allow local users or remote attackers to gain privileges.\n",
+                "markdown": "> Tar 1.15.1 does not properly warn the user when extracting setuid or setgid files, which may allow local users or remote attackers to gain privileges.\n\n|                |                                                                                              |\n|----------------|----------------------------------------------------------------------------------------------|\n| Package        | pkg:deb/debian/tar@1.34%2Bdfsg-1.2%2Bdeb12u1?os_distro=bookworm&os_name=debian&os_version=12 |\n| Affected range | >=1.34+dfsg-1.2+deb12u1                                                                      |\n| Fixed version  | not fixed                                                                                    |\n"
+              },
+              "properties": {
+                "affected_version": ">=1.34+dfsg-1.2+deb12u1",
+                "cvssV3_severity": "LOW",
+                "fixed_version": "not fixed",
+                "purls": [
+                  "pkg:deb/debian/tar@1.34%2Bdfsg-1.2%2Bdeb12u1?os_distro=bookworm&os_name=debian&os_version=12"
+                ],
+                "security-severity": "3.1",
+                "tags": [
+                  "LOW"
+                ]
+              }
+            },
+            {
+              "id": "CVE-2024-28835",
+              "name": "OsPackageVulnerability",
+              "shortDescription": {
+                "text": "CVE-2024-28835"
+              },
+              "helpUri": "https://scout.docker.com/v/CVE-2024-28835?s=debian&n=gnutls28&ns=debian&t=deb&osn=debian&osv=12&vr=%3C3.7.9-2%2Bdeb12u3",
+              "help": {
+                "text": "A flaw has been discovered in GnuTLS where an application crash can be induced when attempting to verify a specially crafted .pem bundle using the \"certtool --verify-chain\" command.\n",
+                "markdown": "> A flaw has been discovered in GnuTLS where an application crash can be induced when attempting to verify a specially crafted .pem bundle using the \"certtool --verify-chain\" command.\n\n|                |                                                                                           |\n|----------------|-------------------------------------------------------------------------------------------|\n| Package        | pkg:deb/debian/gnutls28@3.7.9-2%2Bdeb12u2?os_distro=bookworm&os_name=debian&os_version=12 |\n| Affected range | <3.7.9-2+deb12u3                                                                          |\n| Fixed version  | 3.7.9-2+deb12u3                                                                           |\n"
+              },
+              "properties": {
+                "affected_version": "<3.7.9-2+deb12u3",
+                "cvssV3_severity": "MEDIUM",
+                "fixed_version": "3.7.9-2+deb12u3",
+                "purls": [
+                  "pkg:deb/debian/gnutls28@3.7.9-2%2Bdeb12u2?os_distro=bookworm&os_name=debian&os_version=12"
+                ],
+                "security-severity": "5.0",
+                "tags": [
+                  "MEDIUM"
+                ]
+              }
+            },
+            {
+              "id": "CVE-2023-50387",
+              "name": "OsPackageVulnerability",
+              "shortDescription": {
+                "text": "CVE-2023-50387"
+              },
+              "helpUri": "https://scout.docker.com/v/CVE-2023-50387?s=debian&n=systemd&ns=debian&t=deb&osn=debian&osv=12&vr=%3C252.23-1%7Edeb12u1",
+              "help": {
+                "text": "Certain DNSSEC aspects of the DNS protocol (in RFC 4033, 4034, 4035, 6840, and related RFCs) allow remote attackers to cause a denial of service (CPU consumption) via one or more DNSSEC responses, aka the \"KeyTrap\" issue. One of the concerns is that, when there is a zone with many DNSKEY and RRSIG records, the protocol specification implies that an algorithm must evaluate all combinations of DNSKEY and RRSIG records.\n",
+                "markdown": "> Certain DNSSEC aspects of the DNS protocol (in RFC 4033, 4034, 4035, 6840, and related RFCs) allow remote attackers to cause a denial of service (CPU consumption) via one or more DNSSEC responses, aka the \"KeyTrap\" issue. One of the concerns is that, when there is a zone with many DNSKEY and RRSIG records, the protocol specification implies that an algorithm must evaluate all combinations of DNSKEY and RRSIG records.\n\n|                |                                                                                         |\n|----------------|-----------------------------------------------------------------------------------------|\n| Package        | pkg:deb/debian/systemd@252.22-1~deb12u1?os_distro=bookworm&os_name=debian&os_version=12 |\n| Affected range | <252.23-1~deb12u1                                                                       |\n| Fixed version  | 252.23-1~deb12u1                                                                        |\n"
+              },
+              "properties": {
+                "affected_version": "<252.23-1~deb12u1",
+                "cvssV3_severity": "HIGH",
+                "fixed_version": "252.23-1~deb12u1",
+                "purls": [
+                  "pkg:deb/debian/systemd@252.22-1~deb12u1?os_distro=bookworm&os_name=debian&os_version=12"
+                ],
+                "security-severity": "7.5",
+                "tags": [
+                  "HIGH"
+                ]
+              }
+            }
+          ],
+          "version": "1.14.0"
+        }
+      }
+    }
+  ]
+}

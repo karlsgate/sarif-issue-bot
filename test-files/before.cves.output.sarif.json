@@ -1,0 +1,138 @@
+{
+  "version": "2.1.0",
+  "$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json",
+  "runs": [
+    {
+      "tool": {
+        "driver": {
+          "fullName": "Docker Scout",
+          "informationUri": "https://docker.com/products/docker-scout",
+          "name": "docker scout",
+          "rules": [
+            {
+              "id": "CVE-2024-2511",
+              "name": "OsPackageVulnerability",
+              "shortDescription": {
+                "text": "CVE-2024-2511"
+              },
+              "helpUri": "https://scout.docker.com/v/CVE-2024-2511?s=debian&n=openssl&ns=debian&t=deb&osn=debian&osv=12&vr=%3C3.0.14-1%7Edeb12u1",
+              "help": {
+                "text": "Issue summary: Some non-default TLS server configurations can cause unbounded memory growth when processing TLSv1.3 sessions  Impact summary: An attacker may exploit certain server configurations to trigger unbounded memory growth that would lead to a Denial of Service  This problem can occur in TLSv1.3 if the non-default SSL_OP_NO_TICKET option is being used (but not if early_data support is also configured and the default anti-replay protection is in use). In this case, under certain conditions, the session cache can get into an incorrect state and it will fail to flush properly as it fills. The session cache will continue to grow in an unbounded manner. A malicious client could deliberately create the scenario for this failure to force a Denial of Service. It may also happen by accident in normal operation.  This issue only affects TLS servers supporting TLSv1.3. It does not affect TLS clients.  The FIPS modules in 3.2, 3.1 and 3.0 are not affected by this issue. OpenSSL 1.0.2 is also not affected by this issue.\n",
+                "markdown": "> Issue summary: Some non-default TLS server configurations can cause unbounded memory growth when processing TLSv1.3 sessions  Impact summary: An attacker may exploit certain server configurations to trigger unbounded memory growth that would lead to a Denial of Service  This problem can occur in TLSv1.3 if the non-default SSL_OP_NO_TICKET option is being used (but not if early_data support is also configured and the default anti-replay protection is in use). In this case, under certain conditions, the session cache can get into an incorrect state and it will fail to flush properly as it fills. The session cache will continue to grow in an unbounded manner. A malicious client could deliberately create the scenario for this failure to force a Denial of Service. It may also happen by accident in normal operation.  This issue only affects TLS servers supporting TLSv1.3. It does not affect TLS clients.  The FIPS modules in 3.2, 3.1 and 3.0 are not affected by this issue. OpenSSL 1.0.2 is also not affected by this issue.\n\n|                |                                                                                         |\n|----------------|-----------------------------------------------------------------------------------------|\n| Package        | pkg:deb/debian/openssl@3.0.11-1~deb12u2?os_distro=bookworm&os_name=debian&os_version=12 |\n| Affected range | <3.0.14-1~deb12u1                                                                       |\n| Fixed version  | 3.0.14-1~deb12u1                                                                        |\n"
+              },
+              "properties": {
+                "affected_version": "<3.0.14-1~deb12u1",
+                "cvssV3_severity": "UNSPECIFIED",
+                "fixed_version": "3.0.14-1~deb12u1",
+                "purls": [
+                  "pkg:deb/debian/openssl@3.0.11-1~deb12u2?os_distro=bookworm&os_name=debian&os_version=12"
+                ],
+                "security-severity": "3.1",
+                "tags": [
+                  "UNSPECIFIED"
+                ]
+              }
+            },
+            {
+              "id": "CVE-2007-5686",
+              "name": "OsPackageVulnerability",
+              "shortDescription": {
+                "text": "CVE-2007-5686"
+              },
+              "helpUri": "https://scout.docker.com/v/CVE-2007-5686?s=debian&n=shadow&ns=debian&t=deb&osn=debian&osv=12&vr=%3E%3D1%3A4.13%2Bdfsg1-1",
+              "help": {
+                "text": "initscripts in rPath Linux 1 sets insecure permissions for the /var/log/btmp file, which allows local users to obtain sensitive information regarding authentication attempts.  NOTE: because sshd detects the insecure permissions and does not log certain events, this also prevents sshd from logging failed authentication attempts by remote attackers.\n",
+                "markdown": "> initscripts in rPath Linux 1 sets insecure permissions for the /var/log/btmp file, which allows local users to obtain sensitive information regarding authentication attempts.  NOTE: because sshd detects the insecure permissions and does not log certain events, this also prevents sshd from logging failed authentication attempts by remote attackers.\n\n|                |                                                                                        |\n|----------------|----------------------------------------------------------------------------------------|\n| Package        | pkg:deb/debian/shadow@1:4.13%2Bdfsg1-1?os_distro=bookworm&os_name=debian&os_version=12 |\n| Affected range | >=1:4.13+dfsg1-1                                                                       |\n| Fixed version  | not fixed                                                                              |\n"
+              },
+              "properties": {
+                "affected_version": ">=1:4.13+dfsg1-1",
+                "cvssV3_severity": "LOW",
+                "fixed_version": "not fixed",
+                "purls": [
+                  "pkg:deb/debian/shadow@1:4.13%2Bdfsg1-1?os_distro=bookworm&os_name=debian&os_version=12"
+                ],
+                "security-severity": "3.1",
+                "tags": [
+                  "LOW"
+                ]
+              }
+            },
+            {
+              "id": "CVE-2024-6119",
+              "name": "OsPackageVulnerability",
+              "shortDescription": {
+                "text": "CVE-2024-6119"
+              },
+              "helpUri": "https://scout.docker.com/v/CVE-2024-6119?s=debian&n=openssl&ns=debian&t=deb&osn=debian&osv=12&vr=%3C3.0.14-1%7Edeb12u2",
+              "help": {
+                "text": "Issue summary: Applications performing certificate name checks (e.g., TLS clients checking server certificates) may attempt to read an invalid memory address resulting in abnormal termination of the application process.  Impact summary: Abnormal termination of an application can a cause a denial of service.  Applications performing certificate name checks (e.g., TLS clients checking server certificates) may attempt to read an invalid memory address when comparing the expected name with an `otherName` subject alternative name of an X.509 certificate. This may result in an exception that terminates the application program.  Note that basic certificate chain validation (signatures, dates, ...) is not affected, the denial of service can occur only when the application also specifies an expected DNS name, Email address or IP address.  TLS servers rarely solicit client certificates, and even when they do, they generally don't perform a name check against a reference identifier (expected identity), but rather extract the presented identity after checking the certificate chain.  So TLS servers are generally not affected and the severity of the issue is Moderate.  The FIPS modules in 3.3, 3.2, 3.1 and 3.0 are not affected by this issue.\n",
+                "markdown": "> Issue summary: Applications performing certificate name checks (e.g., TLS clients checking server certificates) may attempt to read an invalid memory address resulting in abnormal termination of the application process.  Impact summary: Abnormal termination of an application can a cause a denial of service.  Applications performing certificate name checks (e.g., TLS clients checking server certificates) may attempt to read an invalid memory address when comparing the expected name with an `otherName` subject alternative name of an X.509 certificate. This may result in an exception that terminates the application program.  Note that basic certificate chain validation (signatures, dates, ...) is not affected, the denial of service can occur only when the application also specifies an expected DNS name, Email address or IP address.  TLS servers rarely solicit client certificates, and even when they do, they generally don't perform a name check against a reference identifier (expected identity), but rather extract the presented identity after checking the certificate chain.  So TLS servers are generally not affected and the severity of the issue is Moderate.  The FIPS modules in 3.3, 3.2, 3.1 and 3.0 are not affected by this issue.\n\n|                |                                                                                         |\n|----------------|-----------------------------------------------------------------------------------------|\n| Package        | pkg:deb/debian/openssl@3.0.11-1~deb12u2?os_distro=bookworm&os_name=debian&os_version=12 |\n| Affected range | <3.0.14-1~deb12u2                                                                       |\n| Fixed version  | 3.0.14-1~deb12u2                                                                        |\n"
+              },
+              "properties": {
+                "affected_version": "<3.0.14-1~deb12u2",
+                "cvssV3_severity": "CRITICAL",
+                "fixed_version": "3.0.14-1~deb12u2",
+                "purls": [
+                  "pkg:deb/debian/openssl@3.0.11-1~deb12u2?os_distro=bookworm&os_name=debian&os_version=12"
+                ],
+                "security-severity": "3.1",
+                "tags": [
+                  "CRITICAL"
+                ]
+              }
+            },
+            {
+              "id": "CVE-2024-28835",
+              "name": "OsPackageVulnerability",
+              "shortDescription": {
+                "text": "CVE-2024-28835"
+              },
+              "helpUri": "https://scout.docker.com/v/CVE-2024-28835?s=debian&n=gnutls28&ns=debian&t=deb&osn=debian&osv=12&vr=%3C3.7.9-2%2Bdeb12u3",
+              "help": {
+                "text": "A flaw has been discovered in GnuTLS where an application crash can be induced when attempting to verify a specially crafted .pem bundle using the \"certtool --verify-chain\" command.\n",
+                "markdown": "> A flaw has been discovered in GnuTLS where an application crash can be induced when attempting to verify a specially crafted .pem bundle using the \"certtool --verify-chain\" command.\n\n|                |                                                                                           |\n|----------------|-------------------------------------------------------------------------------------------|\n| Package        | pkg:deb/debian/gnutls28@3.7.9-2%2Bdeb12u2?os_distro=bookworm&os_name=debian&os_version=12 |\n| Affected range | <3.7.9-2+deb12u3                                                                          |\n| Fixed version  | 3.7.9-2+deb12u3                                                                           |\n"
+              },
+              "properties": {
+                "affected_version": "<3.7.9-2+deb12u3",
+                "cvssV3_severity": "MEDIUM",
+                "fixed_version": "3.7.9-2+deb12u3",
+                "purls": [
+                  "pkg:deb/debian/gnutls28@3.7.9-2%2Bdeb12u2?os_distro=bookworm&os_name=debian&os_version=12"
+                ],
+                "security-severity": "5.0",
+                "tags": [
+                  "MEDIUM"
+                ]
+              }
+            },
+            {
+              "id": "CVE-2023-50387",
+              "name": "OsPackageVulnerability",
+              "shortDescription": {
+                "text": "CVE-2023-50387"
+              },
+              "helpUri": "https://scout.docker.com/v/CVE-2023-50387?s=debian&n=systemd&ns=debian&t=deb&osn=debian&osv=12&vr=%3C252.23-1%7Edeb12u1",
+              "help": {
+                "text": "Certain DNSSEC aspects of the DNS protocol (in RFC 4033, 4034, 4035, 6840, and related RFCs) allow remote attackers to cause a denial of service (CPU consumption) via one or more DNSSEC responses, aka the \"KeyTrap\" issue. One of the concerns is that, when there is a zone with many DNSKEY and RRSIG records, the protocol specification implies that an algorithm must evaluate all combinations of DNSKEY and RRSIG records.\n",
+                "markdown": "> Certain DNSSEC aspects of the DNS protocol (in RFC 4033, 4034, 4035, 6840, and related RFCs) allow remote attackers to cause a denial of service (CPU consumption) via one or more DNSSEC responses, aka the \"KeyTrap\" issue. One of the concerns is that, when there is a zone with many DNSKEY and RRSIG records, the protocol specification implies that an algorithm must evaluate all combinations of DNSKEY and RRSIG records.\n\n|                |                                                                                         |\n|----------------|-----------------------------------------------------------------------------------------|\n| Package        | pkg:deb/debian/systemd@252.22-1~deb12u1?os_distro=bookworm&os_name=debian&os_version=12 |\n| Affected range | <252.23-1~deb12u1                                                                       |\n| Fixed version  | 252.23-1~deb12u1                                                                        |\n"
+              },
+              "properties": {
+                "affected_version": "<252.23-1~deb12u1",
+                "cvssV3_severity": "HIGH",
+                "fixed_version": "252.23-1~deb12u1",
+                "purls": [
+                  "pkg:deb/debian/systemd@252.22-1~deb12u1?os_distro=bookworm&os_name=debian&os_version=12"
+                ],
+                "security-severity": "7.5",
+                "tags": [
+                  "HIGH"
+                ]
+              }
+            }
+          ],
+          "version": "1.14.0"
+        }
+      }
+    }
+  ]
+}
