@@ -227,7 +227,7 @@ vulnerabilities=$(jq -r '.runs[0].tool.driver.rules[] | {
 }' "$INPUT_SARIF_FILE")
 
 # Fetch all issues with the 'security' label, both open and closed
-existing_issues=$(gh issue list --label security --state all --json number,title,state,labels 2> /dev/null)
+existing_issues=$(gh issue list --label security --label $INPUT_LABEL  --state all --json number,title,state,labels 2> /dev/null)
 
 # Process vulnerabilities only if there are any
 if [ -n "$vulnerabilities" ]; then
