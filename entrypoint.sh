@@ -278,5 +278,5 @@ if [ -n "$CLOSED_ISSUES" ]; then
 fi
 
 # Clean up
-rm sarif_titles.txt
-rm sarif_closed_titles.txt
+rm -f sarif_titles.txt
+rm -f sarif_closed_titles.txt

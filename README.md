@@ -91,6 +91,18 @@ To use this action in your workflow, add the following step:
     label: custom-label
 ```
 
+## Workflow Permissions
+
+This action requires specific permissions to function correctly. Make sure to include the following permissions in your workflow:
+
+```yaml
+permissions:
+  contents: read
+  issues: write
+```
+
+These permissions allow the action to read repository contents and manage issues.
+
 ## Example Workflow
 
 Here's an example of how to integrate this action into a workflow that runs Docker Scout and then processes the SARIF output:
@@ -103,6 +115,10 @@ on:
     branches: [ main ]
   pull_request:
     branches: [ main ]
+  
+permissions:
+  contents: read
+  issues: write
   
 jobs:
   scan-and-manage-issues:
