@@ -42,7 +42,7 @@ Another example is using just the image name without the tag:
 
 ```yaml
 - name: Run SARIF Issue Bot
-  uses: your-username/sarif-issue-bot@v1
+  uses: karlsgate/sarif-issue-bot@v1
   with:
     github-token: ${{ secrets.GITHUB_TOKEN }}
     sarif-file: path/to/sarif-output.json
@@ -60,7 +60,7 @@ Or you can use the product name:
 
 ```yaml
 - name: Run SARIF Issue Bot
-  uses: your-username/sarif-issue-bot@v1
+  uses: karlsgate/sarif-issue-bot@v1
   with:
     github-token: ${{ secrets.GITHUB_TOKEN }}
     sarif-file: path/to/sarif-output.json
@@ -83,25 +83,13 @@ To use this action in your workflow, add the following step:
 
 ```yaml
 - name: Run SARIF Issue Bot
-  uses: your-username/sarif-issue-bot@v1
+  uses: karlsgate/sarif-issue-bot@v1
   with:
     github-token: ${{ secrets.GITHUB_TOKEN }}
     sarif-file: path/to/sarif-output.json
     issue-title-replacement: your-docker-image
     label: custom-label
 ```
-
-## Workflow Permissions
-
-This action requires specific permissions to function correctly. Make sure to include the following permissions in your workflow:
-
-```yaml
-permissions:
-  contents: read
-  issues: write
-```
-
-These permissions allow the action to read repository contents and manage issues.
 
 ## Example Workflow
 
@@ -115,10 +103,6 @@ on:
     branches: [ main ]
   pull_request:
     branches: [ main ]
-
-permissions:
-  contents: read
-  issues: write
   
 jobs:
   scan-and-manage-issues:
@@ -131,13 +115,13 @@ jobs:
         command: cves
         image: your-image:tag
         output-file: scout-results.sarif
-        dockerhub-user: ${{ secrets.DOCKERHUB_USER }} # For authentication to Docker Hub, or you can use the docker/login-action befire this step
-        dockerhub-password: ${{ secrets.DOCKERHUB_PASSWORD }} # For authentication to Docker Hub, or you can use the docker/login-action befire this step
+        dockerhub-user: ${{ secrets.DOCKERHUB_USER }} # For authentication to Docker Hub, or you can use the docker/login-action before this step
+        dockerhub-password: ${{ secrets.DOCKERHUB_PASSWORD }} # For authentication to Docker Hub, or you can use the docker/login-action before this step
         registry-user: ${{ secrets.REGISTRY_USER }} # If you're pulling from a private registry like ACR or ECR
         registry-password: ${{ secrets.REGISTRY_PASSWORD }} # If you're pulling from a private registry like ACR or ECR
 
     - name: Run SARIF Issue Bot
-      uses: your-username/sarif-issue-bot@v1
+      uses: karlsgate/sarif-issue-bot@v1
       with:
         github-token: ${{ secrets.GITHUB_TOKEN }}
         sarif-file: scout-results.sarif
