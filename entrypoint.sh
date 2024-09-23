@@ -26,6 +26,9 @@ ISSUE_TEMPLATE=$(cat /usr/src/app/issue_template.md)
 echo "" > sarif_titles.txt
 echo "" > sarif_closed_titles.txt
 
+echo "" > sarif_titles_with_issue_numbers.txt
+echo "" > sarif_closed_titles_with_issue_numbers.txt
+
 # Configure Git to trust the workspace directory
 git config --global --add safe.directory /github/workspace
 
@@ -61,8 +64,11 @@ create_issue() {
   local labels="$3"
 
   # Use printf to preserve newlines in the body
-  printf "%s" "$body" | gh issue create --title "$title" --body-file - --label "$labels" > /dev/null 2>&1
-  echo "🆕 Created issue: $title with labels: $labels"
+  output=$(printf "%s" "$body" | gh issue create --title "$title" --body-file - --label "$labels")
+  issue_number=$(echo "$output" | grep -oE '[0-9]+$')
+
+  echo "ISSUE: #$issue_number. TITLE: '$title'" >> sarif_titles_with_issue_numbers.txt
+  echo "🆕 Created issue #$issue_number: '$title' with labels: $labels"
 }
 
 # Function to update an existing issue
@@ -105,6 +111,7 @@ close_issue() {
   local title="$2"
 
   gh issue close "$issue_number" --comment "This issue has been closed because it is no longer present in the latest scan." > /dev/null 2>&1
+  echo "ISSUE: #$issue_number. TITLE: '$title'" >> sarif_closed_titles_with_issue_numbers.txt
   echo "🔒 Closed issue #$issue_number: $title"
 }
 
@@ -201,6 +208,7 @@ process_vulnerabilities() {
       fi
 
       update_issue "$issue_number" "$title" "$body" "$labels" "$issue_state" "$current_labels"
+      echo "ISSUE: #$issue_number. TITLE: '$title'" >> sarif_titles_with_issue_numbers.txt
     else
       create_issue "$title" "$body" "$labels"
     fi
@@ -257,8 +265,8 @@ if [ "$INPUT_ALLOW_CLOSING" = true ]; then
 fi
 echo "✅ Done processing vulnerabilities"
 
-OPEN_ISSUES=$(cat sarif_titles.txt)
-CLOSED_ISSUES=$(cat sarif_closed_titles.txt)
+OPEN_ISSUES=$(cat sarif_titles_with_issue_numbers.txt)
+CLOSED_ISSUES=$(cat sarif_closed_titles_with_issue_numbers.txt)
 
 if [[ "$OPEN_ISSUES" =~ ^[[:space:]]*$ ]]; then
   # Trim whitespace and newlines
@@ -271,16 +279,30 @@ if [[ "$CLOSED_ISSUES" =~ ^[[:space:]]*$ ]]; then
 fi
 
 if [ -n "$OPEN_ISSUES" ]; then
-  echo ""
-  echo "📃 Here are the currently open vulnerability issue titles for $INPUT_ISSUE_TITLE_REPLACEMENT:"
+  # Output to the build step (console)
+  echo ""  
+  echo "📃🔓 Here are the currently open vulnerability issue titles for $INPUT_ISSUE_TITLE_REPLACEMENT:"
   echo "$OPEN_ISSUES"
+  
+  # Output to the GitHub Actions summary
+  echo "## 📃🔓 Open Vulnerability Issues for $INPUT_ISSUE_TITLE_REPLACEMENT" >> $GITHUB_STEP_SUMMARY
+  echo "$OPEN_ISSUES" >> $GITHUB_STEP_SUMMARY
 fi
+
 if [ -n "$CLOSED_ISSUES" ]; then
+  # Output to the build step (console)
   echo ""
-  echo "📃Here are the closed vulnerability issue titles for $INPUT_ISSUE_TITLE_REPLACEMENT:"
+  echo "📃🔒 Here are the closed vulnerability issue titles for $INPUT_ISSUE_TITLE_REPLACEMENT:"
   echo "$CLOSED_ISSUES"
+  
+  # Output to the GitHub Actions summary
+  echo "## 📃🔓 Closed Vulnerability Issues for $INPUT_ISSUE_TITLE_REPLACEMENT" >> $GITHUB_STEP_SUMMARY
+  echo "$CLOSED_ISSUES" >> $GITHUB_STEP_SUMMARY
 fi
+
 
 # Clean up
 rm -f sarif_titles.txt
 rm -f sarif_closed_titles.txt
+rm -f sarif_titles_with_issue_numbers.txt
+rm -f sarif_closed_titles_with_issue_numbers.txt
