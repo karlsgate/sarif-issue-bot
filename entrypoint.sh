@@ -64,10 +64,10 @@ create_issue() {
   local labels="$3"
 
   # Use printf to preserve newlines in the body
-  output=$(printf "%s" "$body" | gh issue create --title "$title" --body-file - --label "$labels")
-  issue_number=$(echo "$output" | grep -oE '[0-9]+$')
+  url=$(printf "%s" "$body" | gh issue create --title "$title" --body-file - --label "$labels")
+  issue_number=$(echo "$url" | grep -oE '[0-9]+$')
 
-  echo "ISSUE: #$issue_number. TITLE: '$title'" >> sarif_titles_with_issue_numbers.txt
+  echo "Issue #$issue_number: [$title]($url)" >> sarif_titles_with_issue_numbers.txt
   echo "🆕 Created issue #$issue_number: '$title' with labels: $labels"
 }
 
@@ -109,9 +109,10 @@ update_issue() {
 close_issue() {
   local issue_number="$1"
   local title="$2"
+  local url="$3"
 
   gh issue close "$issue_number" --comment "This issue has been closed because it is no longer present in the latest scan." > /dev/null 2>&1
-  echo "ISSUE: #$issue_number. TITLE: '$title'" >> sarif_closed_titles_with_issue_numbers.txt
+  echo "Issue #$issue_number: [$title]($url)" >> sarif_closed_titles_with_issue_numbers.txt
   echo "🔒 Closed issue #$issue_number: $title"
 }
 
@@ -202,13 +203,14 @@ process_vulnerabilities() {
       issue_number=$(echo "$existing_issue" | jq -r '.number')
       issue_state=$(echo "$existing_issue" | jq -r '.state')
       current_labels=$(echo "$existing_issue" | jq -r '.labels[].name' | tr '\n' ',' | sed 's/,$//')
+      url=$(echo "$existing_issue" | jq -r '.url')
 
       if [ "$issue_state" = "CLOSED" ] && [ "$INPUT_ALLOW_REOPENING" = true ]; then
         reopen_issue "$issue_number" "$title"
       fi
 
       update_issue "$issue_number" "$title" "$body" "$labels" "$issue_state" "$current_labels"
-      echo "ISSUE: #$issue_number. TITLE: '$title'" >> sarif_titles_with_issue_numbers.txt
+      echo "Issue #$issue_number: [$title]($url)" >> sarif_titles_with_issue_numbers.txt
     else
       create_issue "$title" "$body" "$labels"
     fi
@@ -235,7 +237,7 @@ vulnerabilities=$(jq -r '.runs[0].tool.driver.rules[] | {
 }' "$INPUT_SARIF_FILE")
 
 # Fetch all issues with the 'security' label, both open and closed
-existing_issues=$(gh issue list --label security --label $INPUT_LABEL  --state all --json number,title,state,labels 2> /dev/null)
+existing_issues=$(gh issue list --label security --label $INPUT_LABEL  --state all --json number,title,state,labels,url 2> /dev/null)
 
 # Process vulnerabilities only if there are any
 if [ -n "$vulnerabilities" ]; then
@@ -249,6 +251,7 @@ if [ "$INPUT_ALLOW_CLOSING" = true ]; then
   echo "$existing_issues" | jq -c '.[] | select(.state == "OPEN")' | while read -r issue; do
     issue_number=$(echo "$issue" | jq -r '.number')
     issue_title=$(echo "$issue" | jq -r '.title')
+    url=$(echo "$issue" | jq -r '.url')
     
     echo "🔍 Checking issue #$issue_number: $issue_title"
     normalized_issue_title=$(echo "$issue_title" | tr -s ' ' | xargs)
@@ -259,7 +262,7 @@ if [ "$INPUT_ALLOW_CLOSING" = true ]; then
     else
       echo "👋 Closing issue #$issue_number: $issue_title"
       echo "$normalized_issue_title" >> sarif_closed_titles.txt
-      close_issue "$issue_number" "$normalized_issue_title"
+      close_issue "$issue_number" "$normalized_issue_title" "$url"
     fi
   done
 fi
