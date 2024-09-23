@@ -243,12 +243,15 @@ if [ "$INPUT_ALLOW_CLOSING" = true ]; then
     issue_title=$(echo "$issue" | jq -r '.title')
     
     echo "🔍 Checking issue #$issue_number: $issue_title"
-    if grep -Fxq "$issue_title" sarif_titles.txt; then
+    normalized_issue_title=$(echo "$issue_title" | tr -s ' ' | xargs)
+    echo "⚖️ Comparing normalized issue title: '$normalized_issue_title' to original issue title from GitHub: '$issue_title'"
+
+    if grep -i -Fxq "$normalized_issue_title" sarif_titles.txt; then
       echo "👍 Keeping open issue #$issue_number: $issue_title"
     else
       echo "👋 Closing issue #$issue_number: $issue_title"
-      echo "$issue_title" >> sarif_closed_titles.txt
-      close_issue "$issue_number" "$issue_title"
+      echo "$normalized_issue_title" >> sarif_closed_titles.txt
+      close_issue "$issue_number" "$normalized_issue_title"
     fi
   done
 fi
