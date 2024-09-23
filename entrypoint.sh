@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/ash
 
 set -e
 
@@ -40,8 +40,14 @@ create_label_if_not_exists() {
   local color="$2"
   local description="$3"
   
-  if ! gh label list | grep -q "$label"; then
-    gh label create "$label" --color "$color" --description "$description" > /dev/null 2>&1 || echo "Failed to create label: $label"
+  label_exists=$(gh label list --json name --jq '.[] | select(.name == "'"$label"'")')
+
+  if [ -z "$label_exists" ]; then
+    echo "⏳ Label $label will be created"
+    gh label create "$label" --color "$color" --description "$description" > /dev/null 2>&1 || echo "❌ Failed to create label: $label"
+    echo "✅ Label $label was created successfully"
+  else
+    echo "✅ Label $label already exists"
   fi
 }
 
@@ -129,6 +135,14 @@ EOF
 
 # Function to process vulnerabilities
 process_vulnerabilities() {
+  
+  # Create necessary labels if they don't exist
+  create_label_if_not_exists "security" "d93f0b" "Security advisory, incident, issue, or vulnerability"
+  create_label_if_not_exists "critical" "ff0000" "Critical priority issue"
+  create_label_if_not_exists "high" "ff6600" "High priority issue"
+  create_label_if_not_exists "medium" "ffdd00" "Medium priority issue"
+  create_label_if_not_exists "low" "0000ff" "Low priority issue"
+
   echo "" > sarif_titles.txt  # Clear the file at the start
   
   echo "$vulnerabilities" | jq -c '.' | while read -r vulnerability; do
@@ -153,6 +167,7 @@ process_vulnerabilities() {
     body=$(replace_placeholder "$body" "{{help_uri}}" "$help_uri")
     body=$(replace_placeholder "$body" "{{purls}}" "$purls")
     body=$(echo "$body" | sed 's/{{[^}]*}}//g')
+
     # Initialize labels with mandatory ones
     labels="security"
     if [ -n "$INPUT_LABEL" ]; then
@@ -189,12 +204,6 @@ process_vulnerabilities() {
   done
 }
 
-# Create necessary labels
-create_label_if_not_exists "security" "d93f0b" "Security advisory, incident, issue, or vulnerability"
-create_label_if_not_exists "critical" "ff0000" "Critical priority issue"
-create_label_if_not_exists "high" "ff6600" "High priority issue"
-create_label_if_not_exists "medium" "ffdd00" "Medium priority issue"
-create_label_if_not_exists "low" "0000ff" "Low priority issue"
 
 if [ -n "$INPUT_LABEL" ]; then
   random_color=$(generate_random_color)
@@ -217,8 +226,12 @@ vulnerabilities=$(jq -r '.runs[0].tool.driver.rules[] | {
 # Fetch all issues with the 'security' label, both open and closed
 existing_issues=$(gh issue list --label security --state all --json number,title,state,labels 2> /dev/null)
 
-# Process vulnerabilities
-process_vulnerabilities
+# Process vulnerabilities only if there are any
+if [ -n "$vulnerabilities" ]; then
+  process_vulnerabilities
+else
+  echo "🔍 No vulnerabilities found to process."
+fi
 
 echo "" > sarif_closed_titles.txt
 
