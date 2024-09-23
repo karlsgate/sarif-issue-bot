@@ -23,6 +23,9 @@ INPUT_ALLOW_CLOSING="${6:-true}"
 # Read the issue template from the file
 ISSUE_TEMPLATE=$(cat /usr/src/app/issue_template.md)
 
+echo "" > sarif_titles.txt
+echo "" > sarif_closed_titles.txt
+
 # Configure Git to trust the workspace directory
 git config --global --add safe.directory /github/workspace
 
@@ -232,8 +235,6 @@ if [ -n "$vulnerabilities" ]; then
 else
   echo "🔍 No vulnerabilities found to process."
 fi
-
-echo "" > sarif_closed_titles.txt
 
 # Check for issues to close
 if [ "$INPUT_ALLOW_CLOSING" = true ]; then
